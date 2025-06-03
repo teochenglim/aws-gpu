@@ -104,9 +104,14 @@ resource "aws_instance" "gpu_spot" {
                 -e "GF_INSTALL_PLUGINS=grafana-clock-panel" \
                 grafana/grafana-oss
 
-              # Wait for Grafana to start
-              sleep 30
-
+              # Install DGCM exporter
+              sudo docker run -d \
+                --gpus all \
+                --cap-add SYS_ADMIN \
+                --rm \
+                --network=host \
+                -p 9400:9400 \
+                nvcr.io/nvidia/k8s/dcgm-exporter:4.2.3-4.1.2-ubuntu22.04
               EOF
 
   tags = {
