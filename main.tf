@@ -54,28 +54,32 @@ resource "aws_security_group" "gpu_sg" {
 }
 
 # # Get Ubuntu 22.04 Deep Learning AMI
-# data "aws_ssm_parameter" "gpu_ami" {
-#   name = "/aws/service/deep-learning/amis/ubuntu-22.04-latest"
-# }
+# https://docs.aws.amazon.com/dlami/latest/devguide/aws-deep-learning-base-gpu-ami-ubuntu-22-04.html
+# $ aws ec2 describe-images --region ap-southeast-1 \
+#       --owners amazon \
+#       --filters 'Name=name,Values=Deep Learning Base OSS Nvidia Driver GPU AMI (Ubuntu 22.04) ????????' 'Name=state,Values=available' \
+#       --query 'reverse(sort_by(Images, &CreationDate))[:1].ImageId' \
+#       --output text
+# ami-0fd15162cb8ee54b8
 
-data "aws_ami" "ubuntu_22" {
+data "aws_ami" "deep_learning_gpu" {
+  owners      = ["amazon"]
   most_recent = true
-  owners      = ["099720109477"] # Canonical's owner ID
 
   filter {
     name   = "name"
-    values = ["ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*"]
+    values = ["Deep Learning Base OSS Nvidia Driver GPU AMI (Ubuntu 22.04) *"]
   }
 
   filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
+    name   = "state"
+    values = ["available"]
   }
 }
 
 # GPU Spot Instance with Grafana
 resource "aws_instance" "gpu_spot" {
-  ami           = data.aws_ami.ubuntu_22.id
+  ami           = data.aws_ami.deep_learning_gpu.id
   instance_type = "g4dn.xlarge"
   subnet_id     = aws_subnet.public_subnet.id
   key_name      = var.key_name
@@ -93,7 +97,7 @@ resource "aws_instance" "gpu_spot" {
   user_data = <<-EOF
               #!/bin/bash
               # Install NVIDIA GPU exporter
-              wget https://github.com/utkuozdemir/nvidia_gpu_exporter/releases/download/v1.1.0/nvidia_gpu_exporter_1.1.0_linux_x86_64.tar.gz
+              wget https://github.com/utkuozdemir/nvidia_gpu_exporter/releases/download/v1.3.2/nvidia_gpu_exporter_1.3.2_linux_x86_64.tar.gz
               tar -xzf nvidia_gpu_exporter_*.tar.gz
               sudo mv nvidia_gpu_exporter /usr/local/bin/
 
@@ -121,15 +125,6 @@ resource "aws_instance" "gpu_spot" {
               sudo systemctl enable docker
               sudo systemctl start docker
 
-              # Install Prometheus
-              sudo docker run -d \
-                --name=prometheus \
-                --network=host \
-                -p 9090:9090 \
-                -v /home/ubuntu/prometheus.yml:/etc/prometheus/prometheus.yml \
-                --restart=always \
-                prom/prometheus
-
               # Create Prometheus config
               sudo tee /home/ubuntu/prometheus.yml > /dev/null <<CONFIG
               global:
@@ -140,6 +135,15 @@ resource "aws_instance" "gpu_spot" {
                   static_configs:
                   - targets: ['172.17.0.1:9835']
               CONFIG
+
+              # Install Prometheus
+              sudo docker run -d \
+                --name=prometheus \
+                --network=host \
+                -p 9090:9090 \
+                -v /home/ubuntu/prometheus.yml:/etc/prometheus/prometheus.yml \
+                --restart=always \
+                prom/prometheus
 
               # Restart Prometheus
               sudo docker restart prometheus

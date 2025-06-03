@@ -11,7 +11,7 @@ resource "aws_vpc" "gpu_vpc" {
 resource "aws_internet_gateway" "igw" {
   vpc_id = aws_vpc.gpu_vpc.id
   tags = {
-    Name = "Main-IGW"
+    Name = "Main-IGW-GPU-Practice"
   }
 }
 
@@ -21,7 +21,7 @@ resource "aws_subnet" "public_subnet" {
   map_public_ip_on_launch = true
   availability_zone       = "${var.region}a"
   tags = {
-    Name = "Public-Subnet"
+    Name = "Public-Subnet-GPU-Practice"
   }
 }
 
@@ -34,7 +34,7 @@ resource "aws_route_table" "public_rt" {
   }
 
   tags = {
-    Name = "Public-RouteTable"
+    Name = "Public-RouteTable-GPU-Practice"
   }
 }
 
