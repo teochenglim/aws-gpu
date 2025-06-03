@@ -78,9 +78,15 @@ resource "aws_instance" "gpu_spot" {
                 scrape_interval: 15s
 
               scrape_configs:
+                - job_name: 'local'
+                  static_configs:
+                  - targets: ['localhost:9090']
                 - job_name: 'gpu_metrics'
                   static_configs:
                   - targets: ['172.17.0.1:9835']
+                - job_name: 'dcgm_gpu_metrics'
+                  static_configs:
+                  - targets: ['172.17.0.1:9400']
               CONFIG
 
               # Install Prometheus
@@ -111,7 +117,7 @@ resource "aws_instance" "gpu_spot" {
                 --rm \
                 --network=host \
                 -p 9400:9400 \
-                nvcr.io/nvidia/k8s/dcgm-exporter:4.2.3-4.1.2-ubuntu22.04
+                nvcr.io/nvidia/k8s/dcgm-exporter:4.1.1-4.0.4-ubuntu22.04
               EOF
 
   tags = {
