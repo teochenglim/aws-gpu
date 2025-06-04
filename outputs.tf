@@ -24,5 +24,5 @@ output "dgcm_nvidia_exporter" {
 }
 
 output "ec2_nvidia_smi_check" {
-  value = "ssh -i your-key.pem ubuntu@${aws_instance.gpu_spot.public_ip} nvidia-smi"
+  value = "ssh ubuntu@${aws_instance.gpu_spot.public_ip} nvidia-smi"
 }
