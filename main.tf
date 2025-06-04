@@ -40,7 +40,6 @@ resource "aws_instance" "gpu_spot" {
   }
 
   vpc_security_group_ids = [aws_security_group.gpu_sg.id]
-
   user_data = templatefile("user_data.sh.tpl", {})
 
   tags = {
