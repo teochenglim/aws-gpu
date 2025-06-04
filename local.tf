@@ -4,5 +4,5 @@ data "http" "my_ip" {
 }
 
 locals {
-  allowed_ip = var.allowed_ip != "" ? var.allowed_ip : "${chomp(data.http.my_ip.response_body)}/32"
+  allowed_ip = "${chomp(data.http.my_ip.response_body)}/32"
 }

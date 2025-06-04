@@ -18,11 +18,6 @@ variable "public_subnet" {
   type        = string
 }
 
-variable "allowed_ip" {
-  description = "Allowed IP for access"
-  type        = string
-}
-
 variable "key_name" {
   description = "EC2 key pair name"
   type        = string
