@@ -6,6 +6,11 @@
 #       --query 'reverse(sort_by(Images, &CreationDate))[:1].ImageId' \
 #       --output text
 # ami-0fd15162cb8ee54b8
+# aws ssm get-parameter --region ap-southeast-1 \
+#     --name /aws/service/deeplearning/ami/x86_64/base-oss-nvidia-driver-gpu-ubuntu-22.04/latest/ami-id \
+#     --query "Parameter.Value" \
+#     --output text
+# ami-0fd15162cb8ee54b8
 
 data "aws_ssm_parameter" "gpu_ami" {
   name = "/aws/service/deeplearning/ami/x86_64/base-oss-nvidia-driver-gpu-ubuntu-22.04/latest/ami-id"
