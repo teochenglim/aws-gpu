@@ -7,6 +7,10 @@
 #       --output text
 # ami-0fd15162cb8ee54b8
 
+data "aws_ssm_parameter" "gpu_ami" {
+  name = "/aws/service/deeplearning/ami/x86_64/base-oss-nvidia-driver-gpu-ubuntu-22.04/latest/ami-id"
+}
+
 data "aws_ami" "deep_learning_gpu" {
   owners      = ["amazon"]
   most_recent = true
@@ -24,7 +28,7 @@ data "aws_ami" "deep_learning_gpu" {
 
 # GPU Spot Instance with Grafana
 resource "aws_instance" "gpu_spot" {
-  ami           = data.aws_ami.deep_learning_gpu.id
+  ami           = data.aws_ami.deep_learning_gpu.id # data.aws_ssm_parameter.gpu_ami.value
   instance_type = var.instance_type # "g4dn.xlarge"
   # g4dn.xlarge: https://instances.vantage.sh/aws/ec2/g4dn.xlarge?region=ap-southeast-1
   # NVIDIA T4: https://aws.amazon.com/blogs/aws/now-available-ec2-instances-g4-with-nvidia-t4-tensor-core-gpus/
