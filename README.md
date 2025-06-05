@@ -3,8 +3,8 @@
 ```
 
 ## check all service is up and running
-sudo systemctl status nvidia_gpu_exporter prometheus grafana dcgm-exporter
-ls -l /etc/systemd/system/{nvidia_gpu_exporter,prometheus,grafana,dcgm-exporter}.service
+sudo systemctl status nvidia_gpu_exporter prometheus grafana dcgm-exporter ollama
+ls -l /etc/systemd/system/{nvidia_gpu_exporter,prometheus,grafana,dcgm-exporter,ollama}.service
 
 curl localhost:9090/metrics
 curl localhost:9835/metrics
@@ -68,7 +68,11 @@ terraform apply
 ### check the tips
 terraform output
 
-### delete resource
+### ollama pull models, on the GPU VM
+sudo docker exec ollama-container ollama pull qwen3:0.6b
+sudo docker exec ollama-container ollama pull deepseek-r1:latest
+
+### delete resource when no longer needed
 terraform destroy
 
 ```

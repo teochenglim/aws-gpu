@@ -38,7 +38,7 @@ scrape_configs:
 EOT
 sudo chown ubuntu:ubuntu /home/ubuntu/prometheus.yml
 
-# Prometheus systemd unit
+# Prometheus systemd unit with named container
 sudo tee /etc/systemd/system/prometheus.service > /dev/null <<'EOT'
 [Unit]
 Description=Prometheus container
@@ -47,19 +47,19 @@ Requires=docker.service
 
 [Service]
 Restart=on-failure
-ExecStartPre=-/usr/bin/docker rm -f prometheus
-ExecStart=/usr/bin/docker run --name=prometheus \
+ExecStartPre=-/usr/bin/docker rm -f prometheus-container
+ExecStart=/usr/bin/docker run --name=prometheus-container \
   --network=host \
   -p 9090:9090 \
   -v /home/ubuntu/prometheus.yml:/etc/prometheus/prometheus.yml \
   prom/prometheus
-ExecStop=/usr/bin/docker stop prometheus
+ExecStop=/usr/bin/docker stop prometheus-container
 
 [Install]
 WantedBy=multi-user.target
 EOT
 
-# Grafana systemd unit
+# Grafana systemd unit with named container
 sudo tee /etc/systemd/system/grafana.service > /dev/null <<'EOT'
 [Unit]
 Description=Grafana container
@@ -68,20 +68,20 @@ Requires=docker.service
 
 [Service]
 Restart=on-failure
-ExecStartPre=-/usr/bin/docker rm -f grafana
-ExecStart=/usr/bin/docker run --name=grafana \
+ExecStartPre=-/usr/bin/docker rm -f grafana-container
+ExecStart=/usr/bin/docker run --name=grafana-container \
   --network=host \
   -p 3000:3000 \
   -e GF_SECURITY_ADMIN_PASSWORD=StrongPassword123! \
   -e GF_INSTALL_PLUGINS=grafana-clock-panel \
   grafana/grafana-oss
-ExecStop=/usr/bin/docker stop grafana
+ExecStop=/usr/bin/docker stop grafana-container
 
 [Install]
 WantedBy=multi-user.target
 EOT
 
-# DCGM exporter systemd unit
+# DCGM exporter systemd unit with named container
 sudo tee /etc/systemd/system/dcgm-exporter.service > /dev/null <<'EOT'
 [Unit]
 Description=DCGM Exporter
@@ -90,14 +90,35 @@ Requires=docker.service
 
 [Service]
 Restart=on-failure
-ExecStartPre=-/usr/bin/docker rm -f dcgm-exporter
-ExecStart=/usr/bin/docker run --name=dcgm-exporter \
+ExecStartPre=-/usr/bin/docker rm -f dcgm-exporter-container
+ExecStart=/usr/bin/docker run --name=dcgm-exporter-container \
   --gpus all \
   --cap-add SYS_ADMIN \
   --network=host \
   -p 9400:9400 \
   nvcr.io/nvidia/k8s/dcgm-exporter:4.1.1-4.0.4-ubuntu22.04
-ExecStop=/usr/bin/docker stop dcgm-exporter
+ExecStop=/usr/bin/docker stop dcgm-exporter-container
+
+[Install]
+WantedBy=multi-user.target
+EOT
+
+# Ollama systemd unit with named container
+sudo tee /etc/systemd/system/ollama.service > /dev/null <<'EOT'
+[Unit]
+Description=Ollama container
+After=docker.service
+Requires=docker.service
+
+[Service]
+Restart=on-failure
+ExecStartPre=-/usr/bin/docker rm -f ollama-container
+ExecStart=/usr/bin/docker run --name=ollama-container \
+  --gpus all \
+  -v ollama-data:/root/.ollama \
+  -p 11434:11434 \
+  ollama/ollama
+ExecStop=/usr/bin/docker stop ollama-container
 
 [Install]
 WantedBy=multi-user.target
@@ -111,8 +132,68 @@ sudo systemctl enable nvidia_gpu_exporter
 sudo systemctl enable prometheus
 sudo systemctl enable grafana
 sudo systemctl enable dcgm-exporter
+sudo systemctl enable ollama
 
 sudo systemctl start nvidia_gpu_exporter
 sudo systemctl start prometheus
 sudo systemctl start grafana
 sudo systemctl start dcgm-exporter
+sudo systemctl start ollama
+
+# Wait for Ollama to start
+sleep 10
+
+# Pull the Qwen3:0.6b model using the container name
+sudo docker exec ollama-container ollama pull qwen3:0.6b
+
+sudo tee /home/ubuntu/pull_ollama.sh > /dev/null <<'EOT'
+#!/bin/bash
+sudo docker exec ollama-container ollama pull qwen3:0.6b
+EOT
+
+# Create a test script to verify Ollama is working
+sudo tee /home/ubuntu/test_ollama.sh > /dev/null <<'EOT'
+#!/bin/bash
+echo "Testing Ollama with Qwen3:0.6b model..."
+response=$(curl -s -X POST http://localhost:11434/api/generate -d '{
+  "model": "qwen3:0.6b",
+  "prompt": "Why is the sky blue?",
+  "stream": false
+}')
+
+echo "Response from Ollama:"
+echo "$response" | jq .
+
+echo -e "\nContainer status:"
+sudo docker ps -f "name=ollama-container" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+EOT
+
+sudo chmod +x /home/ubuntu/test_ollama.sh
+sudo chown ubuntu:ubuntu /home/ubuntu/test_ollama.sh
+
+# Create management scripts for all containers
+sudo tee /home/ubuntu/container-management.sh > /dev/null <<'EOT'
+#!/bin/bash
+case "$1" in
+  start)
+    echo "Starting containers..."
+    sudo systemctl start prometheus grafana dcgm-exporter ollama
+    ;;
+  stop)
+    echo "Stopping containers..."
+    sudo docker stop prometheus-container grafana-container dcgm-exporter-container ollama-container
+    ;;
+  status)
+    echo "Container status:"
+    sudo docker ps -a --filter "name=-container" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|status}"
+    exit 1
+    ;;
+esac
+EOT
+
+sudo chmod +x /home/ubuntu/container-management.sh
+sudo chown ubuntu:ubuntu /home/ubuntu/container-management.sh
+
