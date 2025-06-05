@@ -14,6 +14,12 @@ Grafana UI: admin / StrongPassword123!
 
 Docker main ip 172.17.0.1
 
+$ ip a
+3: docker0: <NO-CARRIER,BROADCAST,MULTICAST,UP> mtu 1500 qdisc noqueue state DOWN group default
+    link/ether 8a:95:c3:32:53:0c brd ff:ff:ff:ff:ff:ff
+    inet 172.17.0.1/16 brd 172.17.255.255 scope global docker0
+       valid_lft forever preferred_lft forever
+
 Grafana Dashboard
 https://grafana.com/grafana/dashboards/14574-nvidia-gpu-metrics/
 https://grafana.com/grafana/dashboards/12239-nvidia-dcgm-exporter-dashboard/
