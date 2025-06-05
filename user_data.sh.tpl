@@ -140,12 +140,6 @@ sudo systemctl start grafana
 sudo systemctl start dcgm-exporter
 sudo systemctl start ollama
 
-# Wait for Ollama to start
-sleep 10
-
-# Pull the Qwen3:0.6b model using the container name
-sudo docker exec ollama-container ollama pull qwen3:0.6b
-
 sudo tee /home/ubuntu/pull_ollama.sh > /dev/null <<'EOT'
 #!/bin/bash
 sudo docker exec -it ollama-container ollama pull qwen3:0.6b
@@ -196,4 +190,3 @@ EOT
 
 sudo chmod +x /home/ubuntu/container-management.sh
 sudo chown ubuntu:ubuntu /home/ubuntu/container-management.sh
-

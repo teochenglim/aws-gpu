@@ -24,6 +24,10 @@ Grafana Dashboard
 https://grafana.com/grafana/dashboards/14574-nvidia-gpu-metrics/
 https://grafana.com/grafana/dashboards/12239-nvidia-dcgm-exporter-dashboard/
 
+### ollama pull models, on the GPU VM
+sudo docker exec -it ollama-container ollama pull qwen3:0.6b
+sudo docker exec -it ollama-container ollama pull deepseek-r1:latest
+
 ```
 
 1. install tools
@@ -67,10 +71,6 @@ terraform apply
 
 ### check the tips
 terraform output
-
-### ollama pull models, on the GPU VM
-sudo docker exec -it ollama-container ollama pull qwen3:0.6b
-sudo docker exec -it ollama-container ollama pull deepseek-r1:latest
 
 ### delete resource when no longer needed
 terraform destroy
