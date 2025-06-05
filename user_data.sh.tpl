@@ -148,7 +148,7 @@ sudo docker exec ollama-container ollama pull qwen3:0.6b
 
 sudo tee /home/ubuntu/pull_ollama.sh > /dev/null <<'EOT'
 #!/bin/bash
-sudo docker exec ollama-container ollama pull qwen3:0.6b
+sudo docker exec -it ollama-container ollama pull qwen3:0.6b
 EOT
 
 # Create a test script to verify Ollama is working

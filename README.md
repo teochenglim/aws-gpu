@@ -69,8 +69,8 @@ terraform apply
 terraform output
 
 ### ollama pull models, on the GPU VM
-sudo docker exec ollama-container ollama pull qwen3:0.6b
-sudo docker exec ollama-container ollama pull deepseek-r1:latest
+sudo docker exec -it ollama-container ollama pull qwen3:0.6b
+sudo docker exec -it ollama-container ollama pull deepseek-r1:latest
 
 ### delete resource when no longer needed
 terraform destroy
