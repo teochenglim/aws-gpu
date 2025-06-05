@@ -28,6 +28,10 @@ brew install awscli tfenv
 
 aws sso login
 
+### import ssh key to AWS
+ssh-keygen            ## if you don't have first key pair yet
+cat ~/.ssh/id_rsa.pub ## copy and patse the out and import key to AWS -> EC2 -> Network & Security (Key Pairs)
+
 tfenv install 1.12.1
 
 ```
@@ -46,6 +50,9 @@ code .
 3. terraform
 
 ```bash
+
+### review variable file 
+vi terraform.tfvars
 
 ### terraform in 3 steps
 terraform init

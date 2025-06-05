@@ -25,7 +25,7 @@ data "aws_ami" "deep_learning_gpu" {
 # GPU Spot Instance with Grafana
 resource "aws_instance" "gpu_spot" {
   ami           = data.aws_ami.deep_learning_gpu.id
-  instance_type = "g4dn.xlarge"
+  instance_type = var.instance_type # "g4dn.xlarge"
   # g4dn.xlarge: https://instances.vantage.sh/aws/ec2/g4dn.xlarge?region=ap-southeast-1
   # NVIDIA T4: https://aws.amazon.com/blogs/aws/now-available-ec2-instances-g4-with-nvidia-t4-tensor-core-gpus/
   subnet_id     = aws_subnet.public_subnet.id
