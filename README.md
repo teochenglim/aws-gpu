@@ -28,6 +28,32 @@ https://grafana.com/grafana/dashboards/12239-nvidia-dcgm-exporter-dashboard/
 sudo docker exec -it ollama-container ollama pull qwen3:0.6b
 sudo docker exec -it ollama-container ollama pull deepseek-r1:latest
 
+docker run --name=ollama-container-2 -d \
+  --gpus all \
+  -v ollama-data:/root/.ollama \
+  -p 11435:11434 \
+  ollama/ollama
+
+docker run --name=ollama-container-3 -d \
+  --gpus all \
+  -v ollama-data:/root/.ollama \
+  -p 11436:11434 \
+  ollama/ollama
+
+curl -s -X POST http://localhost:11435/api/generate -d '{
+  "model": "qwen3:0.6b",
+  "prompt": "Why is the sky blue?",
+  "stream": false
+}'
+
+curl -s -X POST http://localhost:11436/api/generate -d '{
+  "model": "qwen3:0.6b",
+  "prompt": "Why is the sky blue?",
+  "stream": false
+}'
+
+docker stop ollama-container ollama-container-2 ollama-container-3
+
 ```
 
 1. install tools

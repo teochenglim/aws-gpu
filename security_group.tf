@@ -44,6 +44,14 @@ resource "aws_security_group" "gpu_sg" {
     description = "Access to NVIDIA DCGM exporter from allowed IP"
   }
 
+  ingress {
+    from_port   = 11434
+    to_port     = 11436
+    protocol    = "tcp"
+    cidr_blocks = [local.allowed_ip]
+    description = "Access to ollama from allowed IP"
+  }
+
   egress {
     from_port   = 0
     to_port     = 0
