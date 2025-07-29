@@ -38,7 +38,7 @@ resource "aws_instance" "gpu_spot" {
   # g4dn.xlarge: https://instances.vantage.sh/aws/ec2/g4dn.xlarge?region=ap-southeast-1
   # NVIDIA T4: https://aws.amazon.com/blogs/aws/now-available-ec2-instances-g4-with-nvidia-t4-tensor-core-gpus/
   subnet_id     = aws_subnet.public_subnet.id
-  key_name      = var.key_name
+  key_name      = aws_key_pair.chenglimteo.key_name
 
   # Spot configuration
   instance_market_options {
